@@ -17,4 +17,4 @@ Thumbs.db
 /.vscode
 /.history
 
-# aztec-verifier specific
+node_modules/

@@ -4,13 +4,7 @@ use inquire::Select;
 
 #[derive(Debug, Deserialize)]
 pub struct GithubRelease {
-    pub tag_name: String,
-    pub assets: Vec<Asset>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Asset {
-    pub name: String,
+    pub tag_name: String
 }
 
 pub fn fetch_compiler_versions() -> Result<Vec<String>, Box<dyn std::error::Error>> {

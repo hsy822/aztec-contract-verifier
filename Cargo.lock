@@ -94,7 +94,6 @@ dependencies = [
  "inquire",
  "reqwest",
  "serde",
- "serde_json",
  "zip",
 ]
 

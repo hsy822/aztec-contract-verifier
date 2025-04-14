@@ -1,7 +1,6 @@
 mod args;
 mod compiler;
 mod github;
-mod source;
 
 use std::path::Path;
 use compiler::{build_noir_nargo, run_aztec_nargo, build_aztec_nargo_from_git};
