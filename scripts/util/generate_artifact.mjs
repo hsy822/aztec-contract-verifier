@@ -1,5 +1,3 @@
-// generate_contract_artifact.mjs (updated for utility functions and new vk handling)
-
 import { Fr } from '@aztec/foundation/fields';
 import { FunctionType } from '@aztec/aztec.js';
 

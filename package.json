@@ -22,6 +22,7 @@
     "@noir-lang/noir_wasm": "^1.0.0-beta.3",
     "@zkpassport/poseidon2": "^0.6.1",
     "commander": "^13.1.0",
+    "lodash.chunk": "^4.2.0",
     "node-fetch": "^3.3.2"
   }
 }

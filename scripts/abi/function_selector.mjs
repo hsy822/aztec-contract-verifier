@@ -1,53 +1,66 @@
-import { poseidon2HashAccumulate } from '@aztec/foundation/crypto';
-import { Fr } from '@aztec/foundation/fields';
+import { fromHex, toBigIntBE } from '@aztec/foundation/bigint-buffer';
+import { poseidon2HashBytes, randomBytes } from '@aztec/foundation/crypto';
+import { hexSchemaFor } from '@aztec/foundation/schemas';
+import { BufferReader, FieldReader, TypeRegistry } from '@aztec/foundation/serialize';
 
-export class FunctionSelector {
-  constructor(fr) {
-    this.fr = fr;
+import { decodeFunctionSignature } from './decoder.mjs';
+import { Selector } from './selector.mjs';
+
+export class FunctionSelector extends Selector {
+  static fromBuffer(buffer) {
+    const reader = BufferReader.asReader(buffer);
+    const value = Number(toBigIntBE(reader.readBytes(Selector.SIZE)));
+    return new FunctionSelector(value);
   }
 
-  static async fromNameAndParameters(name, params) {
-    const signature = `${name}(${params.map(p => getTypeName(p.type)).join(',')})`;
-    const utf8 = Buffer.from(signature, 'utf-8');
+  static fromField(fr) {
+    return new FunctionSelector(Number(fr.toBigInt()));
+  }
 
-    // split into 31-byte chunks and wrap in Frs
-    const chunks = [];
-    for (let i = 0; i < utf8.length; i += Fr.SIZE_IN_BYTES - 1) {
-      const chunk = Buffer.alloc(Fr.SIZE_IN_BYTES);
-      utf8.slice(i, i + Fr.SIZE_IN_BYTES - 1).copy(chunk, 1); // skip first byte
-      chunks.push(Fr.fromBuffer(chunk));
+  static fromFields(fields) {
+    const reader = FieldReader.asReader(fields);
+    return FunctionSelector.fromField(reader.readField());
+  }
+
+  static async fromSignature(signature) {
+    if (/\s/.test(signature)) {
+      throw new Error('Signature cannot contain whitespace');
     }
-
-    const selectorFr = await poseidon2HashAccumulate(chunks);
-    return new FunctionSelector(selectorFr);
+    const hash = await poseidon2HashBytes(Buffer.from(signature));
+    const bytes = hash.toBuffer().slice(-Selector.SIZE);
+    return FunctionSelector.fromBuffer(bytes);
   }
 
-  toField() {
-    return this.fr;
+  static fromString(selector) {
+    const buf = fromHex(selector);
+    if (buf.length !== Selector.SIZE) {
+      throw new Error(`Invalid FunctionSelector length ${buf.length} (expected ${Selector.SIZE}).`);
+    }
+    return FunctionSelector.fromBuffer(buf);
   }
 
-  toString() {
-    return this.fr.toString(); // already includes 0x prefix
+  static empty() {
+    return new FunctionSelector(0);
+  }
+
+  static fromNameAndParameters(args, maybeParameters) {
+    const { name, parameters } =
+      typeof args === 'string' ? { name: args, parameters: maybeParameters } : args;
+    const signature = decodeFunctionSignature(name, parameters);
+    return this.fromSignature(signature);
+  }
+
+  static random() {
+    return FunctionSelector.fromBuffer(randomBytes(Selector.SIZE));
+  }
+
+  toJSON() {
+    return this.toString();
+  }
+
+  static get schema() {
+    return hexSchemaFor(FunctionSelector);
   }
 }
 
-function getTypeName(type) {
-  switch (type.kind) {
-    case 'field':
-      return 'Field';
-    case 'boolean':
-      return 'bool';
-    case 'integer':
-      return `${type.sign === 'signed' ? 'i' : 'u'}${type.width}`;
-    case 'array':
-      return `[${getTypeName(type.type)};${type.length}]`;
-    case 'string':
-      return `str[${type.length}]`;
-    case 'tuple':
-      return `(${type.fields.map(getTypeName).join(',')})`;
-    case 'struct':
-      return `(${type.fields.map(f => `${f.name}: ${getTypeName(f.type)}`).join(', ')})`;
-    default:
-      return 'unknown';
-  }
-}
+TypeRegistry.register('FunctionSelector', FunctionSelector);

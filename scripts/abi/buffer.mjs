@@ -1,18 +1,22 @@
 import { Fr } from '@aztec/foundation/fields';
+import chunk from 'lodash.chunk';
 
-export function bufferAsFields(buffer, targetLength) {
-  const chunkSize = Fr.SIZE_IN_BYTES - 1;
-  const fields = [new Fr(buffer.length)];
-
-  for (let i = 0; i < buffer.length; i += chunkSize) {
-    const chunk = Buffer.alloc(Fr.SIZE_IN_BYTES);
-    buffer.slice(i, i + chunkSize).copy(chunk, 1); // offset 1
-    fields.push(Fr.fromBuffer(chunk));
+export function bufferAsFields(input, targetLength) {
+  const encoded = [
+    new Fr(input.length),
+    ...chunk(input, Fr.SIZE_IN_BYTES - 1).map(c => {
+      const fieldBytes = Buffer.alloc(Fr.SIZE_IN_BYTES);
+      Buffer.from(c).copy(fieldBytes, 1);
+      return Fr.fromBuffer(fieldBytes);
+    }),
+  ];
+  if (encoded.length > targetLength) {
+    throw new Error(`Input buffer exceeds maximum size: got ${encoded.length} but max is ${targetLength}`);
   }
+  return [...encoded, ...Array(targetLength - encoded.length).fill(Fr.ZERO)];
+}
 
-  if (fields.length > targetLength) {
-    throw new Error(`Buffer too long: ${fields.length} > ${targetLength}`);
-  }
-
-  return [...fields, ...Array(targetLength - fields.length).fill(Fr.ZERO)];
+export function bufferFromFields(fields) {
+  const [length, ...payload] = fields;
+  return Buffer.concat(payload.map(f => f.toBuffer().subarray(1))).subarray(0, length.toNumber());
 }
