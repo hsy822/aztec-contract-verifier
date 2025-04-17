@@ -1,62 +1,44 @@
+use inquire::Select;
 use reqwest::blocking::Client;
 use serde::Deserialize;
-use inquire::Select;
+
+const REPO: &str = "hsy822/aztec-contract-verifier";
 
 #[derive(Debug, Deserialize)]
-pub struct GithubRelease {
-    pub tag_name: String,
+struct Asset {
+    name: String,
+}
+#[derive(Debug, Deserialize)]
+struct Release {
+    tag_name: String,
+    assets: Vec<Asset>,
 }
 
-pub fn fetch_compiler_versions() -> Result<Vec<String>, Box<dyn std::error::Error>> {
-    let platform = detect_platform()?;
-    let url = "https://api.github.com/repos/AztecProtocol/aztec-packages/releases";
+/// 사용 가능한 태그 리스트 반환
+pub fn fetch_prebuilt_versions() -> anyhow::Result<Vec<String>> {
+    let url = format!("https://api.github.com/repos/{}/releases", REPO);
     let client = Client::new();
-
-    let res = client
+    let releases: Vec<Release> = client
         .get(url)
-        .header("User-Agent", "aztec-contract-verifier")
+        .header("User-Agent", "aztec-verifier")
         .send()?
-        .error_for_status()?;
+        .error_for_status()?
+        .json()?;
 
-    let releases: Vec<GithubRelease> = res.json()?;
-    let mut versions = vec![];
-
-    for release in releases {
-        let tag = &release.tag_name;
-        let bb_url = format!(
-            "https://github.com/AztecProtocol/aztec-packages/releases/download/{}/barretenberg-{}.tar.gz",
-            tag, platform
-        );
-        let head = client.head(&bb_url).send();
-        if let Ok(r) = head {
-            if r.status().is_success() {
-                versions.push(tag.clone());
-            }
+    let mut tags = vec![];
+    for r in releases {
+        // tar 이름 규칙: toolchain-<tag>.tar.gz
+        let expected = format!("toolchain-{}.tar.gz", r.tag_name);
+        if r.assets.iter().any(|a| a.name == expected) {
+            tags.push(r.tag_name);
         }
     }
-
-    if versions.is_empty() {
-        return Err("❌ No supported versions with bb binary found.".into());
+    if tags.is_empty() {
+        anyhow::bail!("❌ No prebuilt toolchains found in {}", REPO);
     }
-
-    Ok(versions)
+    Ok(tags)
 }
 
-pub fn prompt_select_version(versions: Vec<String>) -> Result<String, Box<dyn std::error::Error>> {
-    let selection = Select::new("Select a compiler version:", versions).prompt()?;
-    Ok(selection)
-}
-
-fn detect_platform() -> Result<&'static str, Box<dyn std::error::Error>> {
-    if cfg!(target_os = "macos") && cfg!(target_arch = "aarch64") {
-        Ok("arm64-darwin")
-    } else if cfg!(target_os = "macos") {
-        Ok("amd64-darwin")
-    } else if cfg!(target_os = "linux") && cfg!(target_arch = "aarch64") {
-        Ok("arm64-linux")
-    } else if cfg!(target_os = "linux") {
-        Ok("amd64-linux")
-    } else {
-        Err("❌ Unsupported OS or architecture".into())
-    }
+pub fn prompt_select_version(versions: Vec<String>) -> anyhow::Result<String> {
+    Ok(Select::new("Select toolchain version:", versions).prompt()?)
 }

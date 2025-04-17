@@ -3,6 +3,10 @@ name = "aztec-contract-verifier"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "aztec-verifier"
+path = "src/main.rs"
+
 [dependencies]
 clap = { version = "4.4", features = ["derive"] }
 reqwest = { version = "0.11", features = ["blocking", "json"] }
@@ -11,3 +15,5 @@ inquire = "0.6"
 dirs-next = "2"
 zip = "0.6"
 dirs = "4"
+anyhow = "1"
+indicatif = "0.17"

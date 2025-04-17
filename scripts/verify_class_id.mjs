@@ -8,10 +8,10 @@ import { loadContractArtifact, getContractClassFromArtifact, createPXEClient } f
 program
   .requiredOption('--artifact <path>', 'Path to the compiled contract artifact (.json)')
   .option('--address <string>', 'Contract address to compare class ID on-chain')
-  .option('--pxe-url <string>', 'PXE endpoint URL', 'http://localhost:8080')
+  .option('--network <string>', 'Network endpoint URL', 'http://localhost:8080')
   .parse(process.argv);
 
-const { artifact: artifactPath, address: contractAddress, pxeUrl } = program.opts();
+const { artifact: artifactPath, address: contractAddress, network } = program.opts();
 
 (async () => {
   try {
@@ -45,7 +45,7 @@ const { artifact: artifactPath, address: contractAddress, pxeUrl } = program.opt
     console.log(`   ${id.toString()}`);
 
     if (contractAddress) {
-      const pxe = createPXEClient(pxeUrl);
+      const pxe = createPXEClient(network);
       const onchain = await pxe.getContractMetadata(contractAddress);
     
       const onchainClassId = onchain?.contractInstance?.currentContractClassId?.toString();

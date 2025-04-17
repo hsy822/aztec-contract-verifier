@@ -13,6 +13,6 @@ pub struct CliArgs {
     #[arg(long)]
     pub address: String,
 
-    #[arg(long, default_value = "http://localhost:8080")]
-    pub pxe: String,
+    #[arg(long)]
+    pub network: String,
 }
