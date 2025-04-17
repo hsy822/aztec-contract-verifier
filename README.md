@@ -36,6 +36,7 @@ Any help or debugging insight from the community is appreciated!
 
 ```bash
 cargo build --release
+npm install
 ```
 
 Requires:

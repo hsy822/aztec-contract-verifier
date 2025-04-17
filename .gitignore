@@ -3,7 +3,8 @@
 **/*.rs.bk
 
 # IDE/editor files
-/.idea
+/.idea/
+.vscode/
 *.swp
 *.swo
 *.log
@@ -12,10 +13,33 @@
 .DS_Store
 Thumbs.db
 
-# Local tooling or config
-/.env
-/.vscode
-/.history
+# Env / secrets / temp
+.env
+.history
 
+# Node.js
 node_modules/
-contracts/
+package-lock.json
+yarn.lock
+
+# Compiled Aztec contracts
+contracts/**/target/
+contracts/**/Nargo.toml.bk
+contracts/**/.prebuilt/
+contracts/**/.prebuilt-work/
+contracts/**/toolchain-*.tar.gz
+
+# Prebuilt toolchain output
+.prebuilt/
+.prebuilt-work/
+toolchain-*.tar.gz
+
+# Optional: VSCode workspace cache
+*.code-workspace
+
+# Optional: Cargo local config
+.cargo/
+
+# Ignore build artifacts from scripts
+scripts/**/dist/
+scripts/**/out/

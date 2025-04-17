@@ -13,16 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aztec/accounts": "^0.84.0",
-    "@aztec/aztec.js": "^0.84.0",
-    "@aztec/bb.js": "^0.84.0",
-    "@aztec/constants": "^0.84.0",
-    "@aztec/foundation": "^0.84.0",
-    "@noir-lang/noir_js": "^1.0.0-beta.3",
-    "@noir-lang/noir_wasm": "^1.0.0-beta.3",
-    "@zkpassport/poseidon2": "^0.6.1",
-    "commander": "^13.1.0",
-    "lodash.chunk": "^4.2.0",
-    "node-fetch": "^3.3.2"
+    "@aztec/aztec.js": "^0.85.0",
+    "commander": "^13.1.0"
   }
 }

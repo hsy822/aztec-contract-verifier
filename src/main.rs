@@ -8,7 +8,7 @@ use std::process::{Command, Stdio};
 use compiler::{build_noir_nargo, run_aztec_nargo, build_aztec_nargo_from_git};
 use github::{fetch_compiler_versions, prompt_select_version};
 use args::CliArgs;
-
+ 
 use clap::Parser;
 
 fn main() {
