@@ -34,6 +34,7 @@ cargo run --bin aztec-verifier -- \
 
 ## Example output
 
+```text
 📦 Intermediate Hashes:
    • Artifact Hash:              0x06a6f218e8673f0b3063af020bb319de74e08c714b7e7232a26728725be5d644
    • Private Functions Root:     0x2cd0bca700981f9a481db3c4aecfc3f0fec9a495ba62d430ac5acf59cc1bf5c7
@@ -53,3 +54,4 @@ cargo run --bin aztec-verifier -- \
    0x12460f3fe6bb50f010148c971bbf560deaf2727cd2cf948044f24360da3fc4d8
 
 ✖️  Class‑ID mismatch. (on‑chain ❌ local)
+```
