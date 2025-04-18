@@ -9,6 +9,17 @@ contract class‑ID, using a **pre‑built toolchain**.
 * Runs `aztec‑nargo compile` (wrapper) to produce artifacts + verification keys
 * Computes local class‑ID and compares it with the on‑chain value via PXE
 
+### Prerequisites
+- Node.js (>=18) & npm
+- (Ubuntu users) Ubuntu 24.04 recommended (avoids glibc/libstdc++ compatibility issues)
+
+### Platform support
+- Pre‑built toolchains for `amd64‑linux` and `arm64‑darwin`.  
+  Automatically picks the matching asset from GitHub Releases.
+
+### Cache location
+`~/.aztec-verifier/prebuilt/<tag>/<platform>/`
+
 ## Build
 
 ```bash
