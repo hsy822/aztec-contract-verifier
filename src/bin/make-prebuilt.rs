@@ -165,16 +165,20 @@ fn build_toolchain(version: &str) -> Result<(), Box<dyn std::error::Error>> {
     fs::copy(bb_from, stage.join("bb"))?;
     fs::set_permissions(stage.join("bb"), fs::Permissions::from_mode(0o755))?;
 
-    // Copy user nargo
-    let user_nargo = dirs::home_dir()
-        .ok_or("Could not find home dir")?
-        .join(".nargo/bin/nargo");
-    if !user_nargo.exists() {
-        return Err("❌ ~/.nargo/bin/nargo not found.".into());
+    // Copy nargo
+    println!("📦 Collecting built nargo binary...");
+    let nargo_bin = repo_dir
+        .join("noir")
+        .join("noir-repo")
+        .join("target")
+        .join("release")
+        .join("nargo");
+    if !nargo_bin.exists() {
+        return Err(format!("❌ Expected nargo binary not found at {}", nargo_bin.display()).into());
     }
-    fs::copy(&user_nargo, stage.join("nargo"))?;
+    fs::copy(&nargo_bin, stage.join("nargo"))?;
     fs::set_permissions(stage.join("nargo"), fs::Permissions::from_mode(0o755))?;
-
+    
     // Compress result
     println!("📦 Compressing toolchain...");
     let platform = detect_platform()?; 
@@ -185,7 +189,7 @@ fn build_toolchain(version: &str) -> Result<(), Box<dyn std::error::Error>> {
         .stderr(Stdio::inherit()))?;
     println!("✅ Done: {}", tar_path.display());
     println!("→ upload with: cargo run --bin upload-release -- {version}");
-    
+
     // Clean
     fs::remove_dir_all(&workdir)?;
     println!("🧹 Removed temporary build directory.");
