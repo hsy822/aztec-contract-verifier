@@ -4,6 +4,8 @@ use std::{
     process::{Command, Stdio},
 };
 
+use crate::util::platform::detect_platform;
+
 pub struct ToolchainPaths {
     pub root:        PathBuf,
     pub aztec_nargo: PathBuf,
@@ -13,16 +15,21 @@ pub struct ToolchainPaths {
 }
 
 pub fn prepare_toolchain(tag: &str) -> anyhow::Result<ToolchainPaths> {
-    let home = dirs::home_dir().ok_or_else(|| anyhow::anyhow!("no home dir"))?;
-    let root = home.join(".aztec-verifier").join("prebuilt").join(tag);
+    let home: PathBuf = dirs::home_dir().ok_or_else(|| anyhow::anyhow!("no home dir"))?;
+    let platform = detect_platform()?;
+    let root = home.join(".aztec-verifier")
+                            .join("prebuilt")
+                            .join(tag)
+                            .join(platform);
 
     if !root.join("aztec-nargo").exists() {
         fs::create_dir_all(&root)?;
 
-        let tar = root.join("toolchain.tar.gz");
+        let tar = root.join(format!("toolchain-{tag}-{platform}.tar.gz"));
+        
         let url = format!(
-            "https://github.com/hsy822/aztec-contract-verifier/releases/download/{0}/toolchain-{0}.tar.gz",
-            tag
+            "https://github.com/hsy822/aztec-contract-verifier/releases/download/{0}/toolchain-{0}-{1}.tar.gz",
+            tag, platform
         );
         println!("⬇️  downloading {}", url);
 

@@ -10,6 +10,8 @@ use std::os::unix::fs::PermissionsExt;
 use reqwest::blocking::Client;
 use serde::Deserialize;
 
+use aztec_contract_verifier::util::platform::detect_platform; 
+
 const REPO: &str = "AztecProtocol/aztec-packages";
 
 #[derive(Debug, Deserialize)]
@@ -68,20 +70,6 @@ fn fetch_supported_versions() -> Result<Vec<String>, Box<dyn std::error::Error>>
         }
     }
     Ok(available)
-}
-
-fn detect_platform() -> Result<&'static str, Box<dyn std::error::Error>> {
-    if cfg!(target_os = "macos") && cfg!(target_arch = "aarch64") {
-        Ok("arm64-darwin")
-    } else if cfg!(target_os = "macos") {
-        Ok("amd64-darwin")
-    } else if cfg!(target_os = "linux") && cfg!(target_arch = "aarch64") {
-        Ok("arm64-linux")
-    } else if cfg!(target_os = "linux") {
-        Ok("amd64-linux")
-    } else {
-        Err("❌ Unsupported OS or architecture".into())
-    }
 }
 
 fn build_toolchain(version: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -189,13 +177,15 @@ fn build_toolchain(version: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     // Compress result
     println!("📦 Compressing toolchain...");
-    let tar_path = cwd.join(format!("toolchain-{}.tar.gz", version));
+    let platform = detect_platform()?; 
+    let tar_path = cwd.join(format!("toolchain-{version}-{platform}.tar.gz"));
     run(Command::new("tar")
         .args(["-czf", tar_path.to_str().unwrap(), "-C", stage.to_str().unwrap(), "."])
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit()))?;
     println!("✅ Done: {}", tar_path.display());
-
+    println!("→ upload with: cargo run --bin upload-release -- {version}");
+    
     // Clean
     fs::remove_dir_all(&workdir)?;
     println!("🧹 Removed temporary build directory.");

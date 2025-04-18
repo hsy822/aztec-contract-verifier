@@ -2,6 +2,7 @@ mod args;
 mod github;
 mod toolchain;
 mod compiler;         
+mod util;
 
 use args::CliArgs;
 use clap::Parser;

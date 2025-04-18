@@ -1,13 +1,14 @@
 use std::env;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
+use aztec_contract_verifier::util::platform::detect_platform;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let version = env::args()
         .nth(1)
         .expect("Usage: upload-release <version>");
-
-    let file_name = format!("toolchain-{}.tar.gz", version);
+    let platform = detect_platform()?;
+    let file_name = format!("toolchain-{version}-{platform}.tar.gz");
     let file_path = PathBuf::from(&file_name);
 
     if !file_path.exists() {
